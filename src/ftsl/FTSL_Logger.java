@@ -14,7 +14,7 @@ import java.util.Vector;
 
 public class FTSL_Logger extends Thread {
 
-	int CLEANUP_DURATION = 60; // second
+	int CLEANUP_DURATION = 60; // seconds
 	private Lock lock = new Lock();
 
 	String ftsl = "ftsl";
@@ -35,22 +35,27 @@ public class FTSL_Logger extends Thread {
 	FileOutputStream sentMessagesInfoOut = null;
 	FileOutputStream receivedBufferOut = null;
 
-	public class Lock {
+	
+	/* ************************* Constructors */ 
+	public FTSL_Logger() {
 
-		private boolean isLocked = false;
-
-		public synchronized void lock() throws InterruptedException {
-			while (isLocked) {
-				wait();
-			}
-			isLocked = true;
-		}
-
-		public synchronized void unlock() {
-			isLocked = false;
-			notify();
-		}
+		init();
 	}
+
+	public FTSL_Logger(String sessionID) {
+
+		ftsl = ftsl + "_" + sessionID;
+		session = session + "_" + sessionID;
+		sentBuffer = sentBuffer + "_" + sessionID;
+		sentMessagesInfo = sentMessagesInfo + "_" + sessionID;
+		receivedBuffer = receivedBuffer + "_" + sessionID;
+
+		init();
+
+	}
+	
+	
+	/* ************************* */ 
 
 	public void init() {
 		sessionF = new File(session);
@@ -109,171 +114,8 @@ public class FTSL_Logger extends Thread {
 
 	}
 
-	public FTSL_Logger() {
+	/* ***************************** */
 
-		init();
-	}
-
-	public FTSL_Logger(String sessionID) {
-
-		ftsl = ftsl + "_" + sessionID;
-		session = session + "_" + sessionID;
-		sentBuffer = sentBuffer + "_" + sessionID;
-		sentMessagesInfo = sentMessagesInfo + "_" + sessionID;
-		receivedBuffer = receivedBuffer + "_" + sessionID;
-
-		init();
-
-	}
-
-	public void logSessionInfo(String key, String value) {
-
-		String log = key + ": " + value + "\n";
-
-		try {
-			lock.lock();
-			sessionsOut.write(log.getBytes());
-			lock.unlock();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-
-	public void logSessionInfo(String key, Socket socket) {
-		String log = key + ": " + socket.getInetAddress() + " "
-				+ socket.getPort() + "\n";
-		try {
-			lock.lock();
-			sessionsOut.write(log.getBytes());
-			lock.unlock();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-
-	public void logSessionInfo(String key, int value) {
-
-		String log = key + ": " + value + "\n";
-
-		try {
-			lock.lock();
-			sessionsOut.write(log.getBytes());
-			lock.unlock();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-
-	public void logSession(Session session) {
-
-		String log = "SessionID: " + session.getSessionID() + "\n";
-		log = log + "Socket: " + session.getSocket().getInetAddress() + " "
-				+ session.getSocket().getPort() + "\n";
-		log = log + "lastSentPacketID: " + session.getLastSentPacketID() + "\n";
-		log = log + "lastRecievedPacketID: "
-				+ session.getLastRecievedPacketID() + "\n";
-		log = log + "sendMessageID: " + session.getSendMessageID() + "\n";
-		log = log + "recieveMessageID: " + session.getRecieveMessageID() + "\n";
-
-		try {
-			lock.lock();
-			sessionsOut.write(log.getBytes());
-			lock.unlock();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-
-	public void logMessageInfo(MessageInfo info) {
-		String log = info.getStart() + " " + info.getIndex() + " "
-				+ info.getEnd() + " " + info.getId() + "\n";
-
-		try {
-			lock.lock();
-			sentMessagesInfoOut.write(log.getBytes());
-			lock.unlock();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-
-	public void logSentMessage(String message) {
-		String log = message + "\n";
-
-		try {
-			lock.lock();
-			sentBufferOut.write(log.getBytes());
-			lock.unlock();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-
-	public void logSentMessage(FTSLMessage message) {
-		String log = message.toString_() + "\n" + "#####\n";
-
-		try {
-			lock.lock();
-			sentBufferOut.write(log.getBytes());
-			lock.unlock();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-
-	public void logReceivedMessage(int id, String message) {
-		String log = String.valueOf(id) + ": " + message + "\n";
-
-		try {
-			lock.lock();
-			receivedBufferOut.write(log.getBytes());
-			lock.unlock();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-
-		}
-
-	}
 
 	public void log(Session session) {
 
@@ -299,7 +141,7 @@ public class FTSL_Logger extends Thread {
 			e.printStackTrace();
 		}
 
-		// ////////////////////////////////////////////// start log the session
+		/////////////////////// start log the session
 
 		String log = "";
 
@@ -316,9 +158,6 @@ public class FTSL_Logger extends Thread {
 			log = log + "recieveMessageID: " + session.getRecieveMessageID()
 					+ "\n";
 
-			// MessageInfo info=session.getLastReceivedMessageInfo();
-			// log=log+"LastReceivedMessageInfo: "+
-			// info.getStart()+" "+info.getIndex()+" "+info.getEnd()+" "+info.getId()+"\n";
 			log = log + "SentMessagesInfo\n";
 			int index = 0;
 			Vector<MessageInfo> SentMessagesInfo = session
@@ -380,8 +219,175 @@ public class FTSL_Logger extends Thread {
 		System.out.println("loge is true now");
 
 	}
+	
+	/* ***************************** */
 
-	// ////////////////////////////////////////////////////////////////////////////////
+	public void logSessionInfo(String key, String value) {
+
+		String log = key + ": " + value + "\n";
+
+		try {
+			lock.lock();
+			sessionsOut.write(log.getBytes());
+			lock.unlock();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	/* ***************************** */
+
+	public void logSessionInfo(String key, Socket socket) {
+		String log = key + ": " + socket.getInetAddress() + " "
+				+ socket.getPort() + "\n";
+		try {
+			lock.lock();
+			sessionsOut.write(log.getBytes());
+			lock.unlock();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	/* ***************************** */
+
+	public void logSessionInfo(String key, int value) {
+
+		String log = key + ": " + value + "\n";
+
+		try {
+			lock.lock();
+			sessionsOut.write(log.getBytes());
+			lock.unlock();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	/* ***************************** */
+
+	public void logSession(Session session) {
+
+		String log = "SessionID: " + session.getSessionID() + "\n";
+		log = log + "Socket: " + session.getSocket().getInetAddress() + " "
+				+ session.getSocket().getPort() + "\n";
+		log = log + "lastSentPacketID: " + session.getLastSentPacketID() + "\n";
+		log = log + "lastRecievedPacketID: "
+				+ session.getLastRecievedPacketID() + "\n";
+		log = log + "sendMessageID: " + session.getSendMessageID() + "\n";
+		log = log + "recieveMessageID: " + session.getRecieveMessageID() + "\n";
+
+		try {
+			lock.lock();
+			sessionsOut.write(log.getBytes());
+			lock.unlock();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	/* ***************************** */
+
+	public void logMessageInfo(MessageInfo info) {
+		String log = info.getStart() + " " + info.getIndex() + " "
+				+ info.getEnd() + " " + info.getId() + "\n";
+
+		try {
+			lock.lock();
+			sentMessagesInfoOut.write(log.getBytes());
+			lock.unlock();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+	
+	/* ***************************** */
+
+
+	public void logSentMessage(String message) {
+		String log = message + "\n";
+
+		try {
+			lock.lock();
+			sentBufferOut.write(log.getBytes());
+			lock.unlock();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+	
+	/* ***************************** */
+
+
+	public void logSentMessage(FTSLMessage message) {
+		String log = message.toString_() + "\n" + "#####\n";
+
+		try {
+			lock.lock();
+			sentBufferOut.write(log.getBytes());
+			lock.unlock();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	/* ***************************** */
+
+	public void logReceivedMessage(int id, String message) {
+		String log = String.valueOf(id) + ": " + message + "\n";
+
+		try {
+			lock.lock();
+			receivedBufferOut.write(log.getBytes());
+			lock.unlock();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+
+		}
+
+	}
+
+	/* ***************************** */
 
 	public Session initSession(String sessionID) {
 		Session session = new Session();
@@ -632,5 +638,24 @@ public class FTSL_Logger extends Thread {
 		}
 
 		return session;
+	}
+	
+	/* ***************************** */
+	
+	public class Lock {
+
+		private boolean isLocked = false;
+
+		public synchronized void lock() throws InterruptedException {
+			while (isLocked) {
+				wait();
+			}
+			isLocked = true;
+		}
+
+		public synchronized void unlock() {
+			isLocked = false;
+			notify();
+		}
 	}
 }

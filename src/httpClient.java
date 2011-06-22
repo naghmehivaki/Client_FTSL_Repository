@@ -1,8 +1,5 @@
-import java.io.IOException;
-import java.io.ObjectInputStream;
 
 import ftsl.Session;
-import ftsl.FTTCP.*;
 import util.Logger;
 
 public class httpClient {
