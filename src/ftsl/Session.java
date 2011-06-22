@@ -1,4 +1,4 @@
-package ftsl.FTTCP;
+package ftsl;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -25,15 +25,12 @@ public class Session {
 	static final int LOGGING_PERIOD = 10;
 	int sleepTime = DEFAULT_VALUE;
 	int MAX_BUFFER_SIZE = 1000;
-	// AppInterface appInterface = new AppInterfaceImp();
 	FTSL_Logger logger;
 	Timer timer = new Timer();
 
 	Socket socket;
 	ObjectInputStream inputStream;
 	ObjectOutputStream outputStream;
-	// InputChannel inputChannel;
-	// OutputChannel outputChannel;
 	String sessionID = "";
 	// ///////////////////////////////////////// Packets Info
 	int lastSentPacketID = 0;
@@ -43,9 +40,7 @@ public class Session {
 	// ///////////////////////////////////////// Messages Info
 	int sendMessageID = 0;
 	int recieveMessageID = 0;
-	// MessageInfo LastReceivedMessageInfo= new MessageInfo();
 	Vector<MessageInfo> SentMessagesInfo = new Vector<MessageInfo>();
-
 	// //////////////////////////////////////// Constructor
 
 	class logTask extends TimerTask {
@@ -419,7 +414,7 @@ public class Session {
 
 	}
 
-	// ////////////////////////////
+	// //////////////////////////////////////////////////////
 
 	public int read(byte buffer[], int pos, int len) {
 
@@ -428,7 +423,6 @@ public class Session {
 			byte[] tempBuffer = receivedBuffer.get(expectedID).getBytes();
 			increaseLastRecievedPacketID();
 			processFTSLBody(receivedBuffer.get(expectedID));
-			ClientFTSL.updateSession(sessionID, this);
 
 			for (int i = 0; i < tempBuffer.length; i++)
 				buffer[pos + i] = tempBuffer[i];
@@ -520,8 +514,7 @@ public class Session {
 		}
 	}
 
-	public void flush() {
-		// to mark the end of the message
+	public void flush() {  // we ends the message sent by application and call outputstream.flush() 
 		sendMessageID++;
 		addMessageInfo();
 
