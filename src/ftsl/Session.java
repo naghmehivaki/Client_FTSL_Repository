@@ -36,12 +36,12 @@ public class Session {
 	Vector<FTSLMessage> sentBuffer = new Vector<FTSLMessage>();
 	HashMap<Integer, String> receivedBuffer = new HashMap<Integer, String>();
 	// ///////////////////////////////////////// Messages Info
-	int sendMessageID = 0;
+	int sendMessageID = 1;
 	int recieveMessageID = 0;
 	Vector<MessageInfo> SentMessagesInfo = new Vector<MessageInfo>();
 
 	
-	////////////////////////////////////////// Constructor
+	/* ****************************** Constructor */
 	public Session() {
 
 	}
@@ -50,10 +50,9 @@ public class Session {
 		try {
 
 			Random rand = new Random();
-			int num = rand.nextInt(10);
-
+			
 			sessionID = String.valueOf(System.currentTimeMillis())
-					+ String.valueOf((new Random()).nextInt(1000));
+					+ String.valueOf((new Random()).nextInt(10000));
 			// Logger.log("Session Id "+ sessionID +
 			// " is assigned to the session.");
 
@@ -66,16 +65,11 @@ public class Session {
 			inputStream = new ObjectInputStream(socket.getInputStream());
 
 			write();
-
-			// Logger.log("Client session is created input and output streams.");
-
 			logger = new FTSL_Logger(sessionID);
 
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -84,7 +78,7 @@ public class Session {
 				LOGGING_PERIOD * 1000, LOGGING_PERIOD * 1000);
 	}
 
-	// ////////////////////////////////////////// setters and getters
+	/* ****************************** setters and getters */
 
 	public Socket getSocket() {
 		return socket;
@@ -290,18 +284,20 @@ public class Session {
 
 	public void addMessageInfo() {
 
-		if (!SentMessagesInfo.isEmpty()) {
-			SentMessagesInfo.lastElement().setEnd(lastSentPacketID - 1);
-			logger.logMessageInfo(SentMessagesInfo.lastElement());
-		}
 		MessageInfo info = new MessageInfo();
-		info.setStart(lastSentPacketID);
-		info.setIndex(lastSentPacketID);
-		info.setId(sendMessageID);
+		if (SentMessagesInfo.isEmpty())
+			info.setStart(1);
+			
+		else 
+			info.setStart(SentMessagesInfo.lastElement().getEnd()+1);
+			
+		info.setId(sendMessageID);	
+		info.setEnd(lastSentPacketID);
 		SentMessagesInfo.add(info);
 
 	}
 
+	
 	public void addMessageInfo(MessageInfo info) {
 		SentMessagesInfo.add(info);
 
@@ -605,11 +601,8 @@ public class Session {
 
 		while (stopWriting == false);
 		buffer = processOutputPacket(buffer);
-
 		try {
 			outputStream.write(buffer);
-			outputStream.flush();
-
 		} catch (IOException e) {
 			HandleFailure();
 		}
@@ -626,12 +619,10 @@ public class Session {
 			outputStream.flush();
 
 		} catch (IOException e) {
-			// Logger.log("CLinet got error "+ e+
-			// " when was sending the session ID to the server");
+			e.printStackTrace();
 		}
 	}
 
-	
 
 	public byte[] processOutputPacket(byte[] packet) {
 
@@ -639,7 +630,7 @@ public class Session {
 
 		increaseLastSentPacketID();
 
-		FTSLHeader header = new FTSLHeader(sessionID, "", lastSentPacketID,
+		FTSLHeader header = new FTSLHeader(sessionID, "APP", lastSentPacketID,
 				lastRecievedPacketID, sendMessageID, packet.length);
 
 		// Logger.log("the header of the packet is: " + header.toString_());
@@ -653,10 +644,14 @@ public class Session {
 
 	}
 	
-	public void flush() {  // we ends the message sent by application and call outputstream.flush() 
-		sendMessageID++;
+	public void flush() {  // the end of a stream of the message
+		try {
+			outputStream.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		addMessageInfo();
-
+		sendMessageID++;
 	}
 	
 	/* ********************************* */

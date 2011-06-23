@@ -16,23 +16,14 @@ public class httpClient {
 		
 		//Logger.log("Client created a new session to the serve "+ server+ " port "+ port);
 		
-//		OutputChannel out = session.getOutputChannel();
-//		InputChannel in = session.getInputChannel();
-		
-		
-		
-		(new write()).start();		
-		
+		(new write()).start();	
 		(new read()).start();
 
 	}
 
-	public class read extends Thread {
-		//InputChannel in;
-		
+	public class read extends Thread {		
 		
 		public read() {
-			//in = i;
 		}
 
 		public void run() {
@@ -111,10 +102,8 @@ public class httpClient {
 
 
 	public class write extends Thread {
-		//OutputChannel out;
 
-		public write() {
-			//out = o;
+		public write() {		
 		}
 
 		public void run() {
@@ -124,13 +113,15 @@ public class httpClient {
 			while (index < 1000) {
 
 				String str = "GET http://" + server + "/ HTTP/1.1\r\n";
-				//session.write(str.getBytes());
+				session.write(str.getBytes());
 
 				//Logger.log("Client wrote: \n"+str);
 			
-				str = str+"Host: " + server + "\r\n";
+				str = "Host: " + server + "\r\n";
 				str = str + "\r\n";
 				session.write(str.getBytes());
+				session.flush();
+				
 				System.out.println("Client sent: "+System.currentTimeMillis());
 
 				//Logger.log("Client wrote: \n"+str);
