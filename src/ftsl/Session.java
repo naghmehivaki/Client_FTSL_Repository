@@ -331,7 +331,7 @@ public class Session {
 		if (receivedBuffer.containsKey(expectedID)) {
 			byte[] tempBuffer = receivedBuffer.get(expectedID).getBytes();
 			increaseLastReceivedPacketID();
-
+			
 			// should be checked again
 			for (int i = 0; i < tempBuffer.length; i++)
 				buffer[pos + i] = tempBuffer[i];
@@ -388,7 +388,7 @@ public class Session {
 		for (int i = 0; i < header.getMessageSize(); i++)
 			body[i] = tempBody[i];
 
-		int result = processFTSLHeader(header, body);
+		int result = processFTSLHeader(buffer);
 		
 		if (result == 0) {
 			return 0;
@@ -404,8 +404,14 @@ public class Session {
 		return header.getMessageSize();
 	}
 	
-	public int processFTSLHeader(FTSLHeader header, byte[] b) {
-
+	public int processFTSLHeader(byte[] buffer) {
+		
+		String packet = new String(buffer);
+		int index = packet.indexOf("\n");
+		String str = packet.substring(0, index);
+		
+		FTSLHeader header = FTSLHeader.valueOf_(str);
+		
 		String flag = header.getFLAG();
 		String sid = header.getSID();
 		int pid = header.getPID();
@@ -422,7 +428,7 @@ public class Session {
 
 			} else {
 
-				receivedBuffer.put(pid, new String(b));
+				receivedBuffer.put(pid, packet);
 				if (!receivedBuffer.containsKey(pid - 1)) {
 					FTSLHeader h = new FTSLHeader(sid, "FTSL_NACK", pid,
 							lastRecievedPacketID, 0);
@@ -471,12 +477,12 @@ public class Session {
 
 			removeDeliveredMessages(rpid);
 			// all messages are lost should be sent again
-			int index = 0;
+			index = 0;
 			while (index < sentBuffer.size()) {
-				FTSLMessage packet = sentBuffer.get(index);
-				if (packet.getHeader().getPID() > rpid) {
+				FTSLMessage pkt = sentBuffer.get(index);
+				if (pkt.getHeader().getPID() > rpid) {
 					try {
-						outputStream.write(packet.toByte_());
+						outputStream.write(pkt.toByte_());
 						outputStream.flush();
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -490,14 +496,14 @@ public class Session {
 		} else if (flag.compareTo("FTSL_NACK") == 0) {
 			removeDeliveredMessages(rpid);
 			// all messages are lost should be sent again
-			int index = 0;
+			index = 0;
 			while (index < sentBuffer.size()) {
-				FTSLMessage packet = sentBuffer.get(index);
-				if (packet.getHeader().getPID() > rpid
-						& packet.getHeader().getPID() < pid) {
+				FTSLMessage pkt= sentBuffer.get(index);
+				if (pkt.getHeader().getPID() > rpid
+						& pkt.getHeader().getPID() < pid) {
 					try {
 						Logger.log(":) :) :) Client is sending the lost messags");
-						outputStream.write(packet.toByte_());
+						outputStream.write(pkt.toByte_());
 						outputStream.flush();
 
 					} catch (IOException e) {
@@ -548,7 +554,7 @@ public class Session {
 		increaseLastSentPacketID();
 
 		FTSLHeader header = new FTSLHeader(sessionID, "APP", lastSentPacketID,
-				lastRecievedPacketID, sendMessageID, packet.length);
+				lastRecievedPacketID, packet.length);
 
 		// Logger.log("the header of the packet is: " + header.toString_());
 
