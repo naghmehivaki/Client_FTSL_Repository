@@ -48,8 +48,6 @@ public class Session {
 	public Session(String server, int port) {
 		try {
 
-			Random rand = new Random();
-			
 			sessionID = String.valueOf(System.currentTimeMillis())
 					+ String.valueOf((new Random()).nextInt(10000));
 			// Logger.log("Session Id "+ sessionID +
@@ -160,8 +158,8 @@ public class Session {
 		SentMessagesInfo = sentMessagesInfo;
 	}
 
-	public void setLastRecievedPacketID(int lastRecievedPacketID) {
-		lastRecievedPacketID = lastRecievedPacketID;
+	public void setLastRecievedPacketID(int id) {
+		lastRecievedPacketID = id;
 	}
 
 	// ////////////////////////////////////////////// Operations
@@ -462,18 +460,18 @@ public class Session {
 			}
 			return -1;
 
-		} else if (flag.compareTo("FTSL_REPLY") == 0) {
+		} else if (flag.compareTo("REP") == 0) {
 
 			removeDeliveredMessages(rpid);
 
 			return -1;
-		} else if (flag.compareTo("FTSL_NOTIFICATION") == 0) {
+		} else if (flag.compareTo("NTF") == 0) {
 
 			// it doesn't happen in this side because that is the client
 			// re-create the socket
 			return -1;
 
-		} else if (flag.compareTo("FTSL_ACK") == 0) {
+		} else if (flag.compareTo("ACK") == 0) {
 
 			removeDeliveredMessages(rpid);
 			// all messages are lost should be sent again
@@ -493,7 +491,7 @@ public class Session {
 
 			return -1;
 
-		} else if (flag.compareTo("FTSL_NACK") == 0) {
+		} else if (flag.compareTo("NAK") == 0) {
 			removeDeliveredMessages(rpid);
 			// all messages are lost should be sent again
 			index = 0;
@@ -600,7 +598,7 @@ public class Session {
 			HandleFailure();
 		}
 
-		FTSLHeader header = new FTSLHeader(sessionID, "FTSL_NOTIFICATION", 0,
+		FTSLHeader header = new FTSLHeader(sessionID, "NTF", 0,
 				lastRecievedPacketID, -1);
 
 		FTSLMessage packet = new FTSLMessage(null, header);
