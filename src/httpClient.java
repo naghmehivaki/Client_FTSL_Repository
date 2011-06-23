@@ -90,10 +90,7 @@ public class httpClient {
 			return false;
 
 		String method = str.substring(0, index);
-		//Logger.log("method is: "+method);
-		// if (method == "OPTIONS" || method == "GET" || method == "HEAD" ||
-		// method == "POST" || method == "PUT" || method == "DELETE" || method
-		// == "TRACE" || method == "CONNECT")
+	
 		if (method.compareTo("HTTP/1.1") == 0)
 			return true;
 		else
