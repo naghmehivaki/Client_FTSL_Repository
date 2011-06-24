@@ -15,7 +15,9 @@ import util.Logger;
 
 public class Session {
 
-	boolean stopWriting = true;
+	
+	int MAX_TIME_TO_TRY= 1000; // seconds
+	boolean stop = true;
 	int DEFAULT_VALUE = 1000;
 	static final int LOGGING_PERIOD = 10;
 	int sleepTime = DEFAULT_VALUE;
@@ -282,7 +284,7 @@ public class Session {
 	
 	/* **************************** */
 
-	public void removeDeliveredMessages(int rpid) {
+	public int removeDeliveredMessages(int rpid) {
 		int index = 0;
 		int id = rpid;
 		while (index < SentMessagesInfo.size()) {
@@ -290,7 +292,6 @@ public class Session {
 			if (info.getEnd() != 0 & info.getEnd() <= rpid) {
 				id = info.getEnd();
 				SentMessagesInfo.remove(index);
-
 			} else
 				index = SentMessagesInfo.size();
 		}
@@ -298,14 +299,14 @@ public class Session {
 		index = 0;
 		while (index < sentBuffer.size()) {
 			FTSLMessage message = sentBuffer.get(index);
-			if (message.getHeader().getPID() <= rpid) {
+			if (message.getHeader().getPID() <= id) {
 				sentBuffer.remove(index);
-
 			} else
 				index = sentBuffer.size();
 		}
-
+		return id;
 	}
+	
 	/* **************************** */
 
 	public void updateSocket(Socket s) {
@@ -318,7 +319,6 @@ public class Session {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	/* **************************** */
@@ -361,11 +361,9 @@ public class Session {
 					test = 0;
 					read = pSize;
 					for (int i = 0; i < read; i++)
-						buffer[pos + i] = packet[i];
-					
+						buffer[pos + i] = packet[i];	
 				}
 			}
-
 			return read;
 		}
 	}
@@ -376,30 +374,24 @@ public class Session {
 		if (!packet.startsWith(FTSLHeader.protocol))
 			return 0;
 
-		int index = packet.indexOf("\n");
-		String h = packet.substring(0, index);
-		String b = packet.substring(index + 1);
-		FTSLHeader header = FTSLHeader.valueOf_(h);
-		byte[] body = new byte[header.getMessageSize()];
-		byte[] tempBody = b.getBytes();
-		
-		for (int i = 0; i < header.getMessageSize(); i++)
-			body[i] = tempBody[i];
-
 		int result = processFTSLHeader(buffer);
 		
 		if (result == 0) {
 			return 0;
 
 		} else {
-
-			if (tempBody == null || tempBody.length == 0)
-					return 0;
 				
+			int index = packet.indexOf("\n");
+			String h = packet.substring(0, index);
+			String b = packet.substring(index + 1);
+			
+			byte[] tempBody = b.getBytes();
 			for (int i = 0; i < tempBody.length; i++)
 				buffer[i] = tempBody[i];
+
+			FTSLHeader header = FTSLHeader.valueOf_(h);
+			return header.getMessageSize();
 		}
-		return header.getMessageSize();
 	}
 	
 	public int processFTSLHeader(byte[] buffer) {
@@ -428,8 +420,7 @@ public class Session {
 
 				receivedBuffer.put(pid, packet);
 				if (!receivedBuffer.containsKey(pid - 1)) {
-					FTSLHeader h = new FTSLHeader(sid, "FTSL_NACK", pid,
-							lastRecievedPacketID, 0);
+					FTSLHeader h = new FTSLHeader(sid, "NAK", pid,lastRecievedPacketID, 0);
 					FTSLMessage ftslPacket = new FTSLMessage(null, h);
 
 					try {
@@ -458,23 +449,12 @@ public class Session {
 			} catch (IOException e) {
 				// TODO: handle exception
 			}
-			return -1;
+			return 0;
 
 		} else if (flag.compareTo("REP") == 0) {
 
 			removeDeliveredMessages(rpid);
-
-			return -1;
-		} else if (flag.compareTo("NTF") == 0) {
-
-			// it doesn't happen in this side because that is the client
-			// re-create the socket
-			return -1;
-
-		} else if (flag.compareTo("ACK") == 0) {
-
-			removeDeliveredMessages(rpid);
-			// all messages are lost should be sent again
+			
 			index = 0;
 			while (index < sentBuffer.size()) {
 				FTSLMessage pkt = sentBuffer.get(index);
@@ -488,8 +468,32 @@ public class Session {
 				}
 				index++;
 			}
+			
+			return 0;
+			
+		} else if (flag.compareTo("NTF") == 0) {
 
-			return -1;
+			return 0;
+
+		} else if (flag.compareTo("ACK") == 0) {
+
+			int id=removeDeliveredMessages(rpid);
+			// All messages are lost should be sent again
+			index = 0;
+			while (index < sentBuffer.size()) {
+				FTSLMessage pkt = sentBuffer.get(index);
+				if (pkt.getHeader().getPID() > id) {
+					try {
+						outputStream.write(pkt.toByte_());
+						outputStream.flush();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				index++;
+			}
+
+			return 0;
 
 		} else if (flag.compareTo("NAK") == 0) {
 			removeDeliveredMessages(rpid);
@@ -497,10 +501,9 @@ public class Session {
 			index = 0;
 			while (index < sentBuffer.size()) {
 				FTSLMessage pkt= sentBuffer.get(index);
-				if (pkt.getHeader().getPID() > rpid
-						& pkt.getHeader().getPID() < pid) {
+				int id=pkt.getHeader().getPID();
+				if (id > rpid & id < pid) {
 					try {
-						Logger.log(":) :) :) Client is sending the lost messags");
 						outputStream.write(pkt.toByte_());
 						outputStream.flush();
 
@@ -511,23 +514,24 @@ public class Session {
 				index++;
 			}
 
-			return -1;
+			return 0;
 		}
-		return -1;
+		return 0;
 	}
 
 	/* **************************** */
 
 	public void write(byte[] buffer) {
 
-		while (stopWriting == false);
+		while (stop == false);
 		buffer = processOutputPacket(buffer);
 		try {
 			outputStream.write(buffer);
 		} catch (IOException e) {
+			stop = false;
 			HandleFailure();
+			stop = true;
 		}
-
 	}
 
 	public void write() {
@@ -547,15 +551,9 @@ public class Session {
 
 	public byte[] processOutputPacket(byte[] packet) {
 
-		// Logger.log("FTSL is writing in the output stream in the server side of the proxy.");
-
 		increaseLastSentPacketID();
-
 		FTSLHeader header = new FTSLHeader(sessionID, "APP", lastSentPacketID,
 				lastRecievedPacketID, packet.length);
-
-		// Logger.log("the header of the packet is: " + header.toString_());
-
 		FTSLMessage pkt = new FTSLMessage(packet, header);
 		byte[] buffer = pkt.toByte_();
 
@@ -579,7 +577,6 @@ public class Session {
 
 	public void HandleFailure() {
 
-		stopWriting = false;
 		try {
 			InetAddress address = socket.getInetAddress();
 			int port = socket.getPort();
@@ -595,11 +592,13 @@ public class Session {
 				e1.printStackTrace();
 			}
 			sleepTime = sleepTime * 2;
+			if (sleepTime > MAX_TIME_TO_TRY * 1000)
+				System.exit(1);
 			HandleFailure();
 		}
 
 		FTSLHeader header = new FTSLHeader(sessionID, "NTF", 0,
-				lastRecievedPacketID, -1);
+				lastRecievedPacketID, 0);
 
 		FTSLMessage packet = new FTSLMessage(null, header);
 		byte[] buffer = packet.toByte_();
@@ -610,9 +609,11 @@ public class Session {
 			outputStream.flush();
 			logger.logSessionInfo("Socket", socket);
 
-			while (inputStream.read() == -1)
-				;
-
+			inputStream.read(buffer);
+			
+			processFTSLHeader(buffer);
+			
+			
 		} catch (IOException e) {
 			try {
 				Thread.sleep(sleepTime);
@@ -620,6 +621,8 @@ public class Session {
 				e1.printStackTrace();
 			}
 			sleepTime = sleepTime * 2;
+			if (sleepTime > MAX_TIME_TO_TRY * 1000)
+				System.exit(1);
 			HandleFailure();
 		}
 
