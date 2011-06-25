@@ -65,10 +65,8 @@ public class FTSL_Logger extends Thread {
 				sessionF.createNewFile();
 			sessionsOut = new FileOutputStream(sessionF);
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -79,10 +77,8 @@ public class FTSL_Logger extends Thread {
 				sentBufferF.createNewFile();
 			sentBufferOut = new FileOutputStream(sentBufferF);
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -93,10 +89,8 @@ public class FTSL_Logger extends Thread {
 				sentMessagesInfoF.createNewFile();
 			sentMessagesInfoOut = new FileOutputStream(sentMessagesInfoF);
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		receivedBufferF = new File(receivedBuffer);
@@ -105,10 +99,8 @@ public class FTSL_Logger extends Thread {
 				receivedBufferF.createNewFile();
 			receivedBufferOut = new FileOutputStream(receivedBufferF);
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -122,7 +114,6 @@ public class FTSL_Logger extends Thread {
 		try {
 			lock.lock();
 		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		System.out.println("loge is false now");
@@ -134,10 +125,8 @@ public class FTSL_Logger extends Thread {
 				ftslF.createNewFile();
 			ftslOut = new FileOutputStream(ftslF);
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -155,8 +144,6 @@ public class FTSL_Logger extends Thread {
 			log = log + "lastRecievedPacketID: "
 					+ session.getLastRecievedPacketID() + "\n";
 			log = log + "sendMessageID: " + session.getSendMessageID() + "\n";
-			log = log + "recieveMessageID: " + session.getRecieveMessageID()
-					+ "\n";
 
 			log = log + "SentMessagesInfo\n";
 			int index = 0;
@@ -193,7 +180,7 @@ public class FTSL_Logger extends Thread {
 			ftslOut.write(log.getBytes());
 
 		} catch (Exception e) {
-			// TODO: handle exception
+			e.printStackTrace();
 		}
 
 		// ////////////////////////////////////////////// end log the session
@@ -205,7 +192,6 @@ public class FTSL_Logger extends Thread {
 			receivedBufferOut.close();
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -231,10 +217,8 @@ public class FTSL_Logger extends Thread {
 			sessionsOut.write(log.getBytes());
 			lock.unlock();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -250,10 +234,8 @@ public class FTSL_Logger extends Thread {
 			sessionsOut.write(log.getBytes());
 			lock.unlock();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -270,10 +252,8 @@ public class FTSL_Logger extends Thread {
 			sessionsOut.write(log.getBytes());
 			lock.unlock();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -290,17 +270,14 @@ public class FTSL_Logger extends Thread {
 		log = log + "lastRecievedPacketID: "
 				+ session.getLastRecievedPacketID() + "\n";
 		log = log + "sendMessageID: " + session.getSendMessageID() + "\n";
-		log = log + "recieveMessageID: " + session.getRecieveMessageID() + "\n";
 
 		try {
 			lock.lock();
 			sessionsOut.write(log.getBytes());
 			lock.unlock();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -317,10 +294,8 @@ public class FTSL_Logger extends Thread {
 			sentMessagesInfoOut.write(log.getBytes());
 			lock.unlock();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -337,10 +312,8 @@ public class FTSL_Logger extends Thread {
 			sentBufferOut.write(log.getBytes());
 			lock.unlock();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -357,10 +330,8 @@ public class FTSL_Logger extends Thread {
 			sentBufferOut.write(log.getBytes());
 			lock.unlock();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -376,10 +347,8 @@ public class FTSL_Logger extends Thread {
 			receivedBufferOut.write(log.getBytes());
 			lock.unlock();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 
@@ -420,9 +389,6 @@ public class FTSL_Logger extends Thread {
 				log = reader.readLine();
 				log = log.substring(log.indexOf(" ") + 1);
 				session.setSendMessageID(Integer.valueOf(log));
-				log = reader.readLine();
-				log = log.substring(log.indexOf(" ") + 1);
-				session.setRecieveMessageID(Integer.valueOf(log));
 
 				log = reader.readLine();
 				if (log.compareTo("SentMessagesInfo") == 0) {
@@ -490,7 +456,7 @@ public class FTSL_Logger extends Thread {
 			}
 
 		} catch (Exception e) {
-			// TODO: handle exception
+			e.printStackTrace();
 		}
 
 		// /////////////////////////////////////////////////////////////
@@ -508,7 +474,7 @@ public class FTSL_Logger extends Thread {
 				int lastSentPacketID = session.getLastSentPacketID();
 				int lastRecievedPacketID = session.getLastRecievedPacketID();
 				int sendMessageID = session.getSendMessageID();
-				int recieveMessageID = session.getRecieveMessageID();
+//				int recieveMessageID = session.getRecieveMessageID();
 				while (log != null) {
 
 					int index = 0;
@@ -524,21 +490,16 @@ public class FTSL_Logger extends Thread {
 						index = log.indexOf(":");
 						sendMessageID = Integer.valueOf(log
 								.substring(index + 2));
-					} else if (log.contains("recieveMessageID")) {
-						index = log.indexOf(":");
-						recieveMessageID = Integer.valueOf(log
-								.substring(index + 2));
+					} 
 
-					}
 				}
 				session.setLastSentPacketID(lastSentPacketID);
 				session.setLastRecievedPacketID(lastRecievedPacketID);
 				session.setLastRecievedPacketID(sendMessageID);
-				session.setRecieveMessageID(recieveMessageID);
 			}
 
 		} catch (Exception e) {
-			// TODO: handle exception
+			e.printStackTrace();
 		}
 
 		// /////////////////////////////////////////////////////////////
@@ -567,7 +528,7 @@ public class FTSL_Logger extends Thread {
 				}
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			e.printStackTrace();
 		}
 
 		// /////////////////////////////////////////////////////////////
@@ -602,7 +563,7 @@ public class FTSL_Logger extends Thread {
 				}
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			e.printStackTrace();
 		}
 		// /////////////////////////////////////////////////////////////
 		// reading receivedBuffer
@@ -634,7 +595,7 @@ public class FTSL_Logger extends Thread {
 				}
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			e.printStackTrace();
 		}
 
 		return session;

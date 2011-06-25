@@ -172,10 +172,9 @@ public class Session {
 		return lastSentPacketID;
 	}
 
-	public int increaseSendMessageID() {
+	public void increaseSendMessageID() {
 		sendMessageID++;
 		logger.logSessionInfo("SendMessageID", sendMessageID);
-		return sendMessageID;
 	}
 
 	public int increaseLastReceivedPacketID() {
@@ -214,7 +213,7 @@ public class Session {
 			outputStream.flush();
 
 		} catch (IOException e) {
-
+			e.printStackTrace();
 		}
 
 	}
@@ -232,7 +231,7 @@ public class Session {
 			outputStream.flush();
 
 		} catch (IOException e) {
-
+			e.printStackTrace();
 		}
 
 	}
@@ -266,6 +265,7 @@ public class Session {
 		info.setId(sendMessageID);
 		info.setEnd(lastSentPacketID);
 		SentMessagesInfo.add(info);
+		logger.logMessageInfo(info);
 
 	}
 
@@ -341,6 +341,7 @@ public class Session {
 				try {
 					read = inputStream.read(packet);
 				} catch (IOException e) {
+					e.printStackTrace();
 					read=0;
 				}
 			}
@@ -431,6 +432,7 @@ public class Session {
 						outputStream.flush();
 
 					} catch (IOException e) {
+						e.printStackTrace();
 						if (socket.isConnected()==false)
 							HandleFailure();
 					}
@@ -474,9 +476,7 @@ public class Session {
 			return 0;
 
 		} else if (flag.compareTo("NTF") == 0) {
-			// server replied to the NTF message of the client
-			// client should remove the buffer and send the messages lost during
-			// the failure
+	
 			int id = removeDeliveredMessages(rpid);
 			index = 0;
 			while (index < sentBuffer.size()) {
@@ -497,21 +497,6 @@ public class Session {
 		} else if (flag.compareTo("ACK") == 0) {
 
 			int id = removeDeliveredMessages(rpid);
-//			// All messages are lost should be sent again
-//			index = 0;
-//			while (index < sentBuffer.size()) {
-//				FTSLMessage pkt = sentBuffer.get(index);
-//				if (pkt.getHeader().getPID() > id) {
-//					try {
-//						outputStream.write(pkt.toByte_());
-//						outputStream.flush();
-//					} catch (IOException e) {
-//						e.printStackTrace();
-//					}
-//				}
-//				index++;
-//			}
-
 			return 0;
 
 		} else if (flag.compareTo("NAK") == 0) {
@@ -546,7 +531,9 @@ public class Session {
 		buffer = processOutputPacket(buffer);
 		try {
 			outputStream.write(buffer);
+			outputStream.flush();
 		} catch (IOException e) {
+			e.printStackTrace();
 			stop = true;
 			HandleFailure();
 			stop = false;
@@ -583,12 +570,7 @@ public class Session {
 
 	public void flush() { // the end of a stream of the message
 		addMessageInfo();
-		sendMessageID++;
-		try {
-			outputStream.flush();
-		} catch (IOException e) {
-			HandleFailure();
-		}
+		increaseSendMessageID();
 	}
 
 	/* ********************************* */
@@ -606,6 +588,7 @@ public class Session {
 			inputStream = new ObjectInputStream(socket.getInputStream());
 
 		} catch (IOException e2) {
+			e2.printStackTrace();
 			try {
 				Thread.sleep(sleepTime);
 			} catch (InterruptedException e1) {
@@ -636,6 +619,7 @@ public class Session {
 				processFTSLHeader(buffer);
 
 			} catch (IOException e) {
+				e.printStackTrace();
 				try {
 					Thread.sleep(sleepTime);
 				} catch (InterruptedException e1) {

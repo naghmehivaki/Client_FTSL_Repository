@@ -4,7 +4,7 @@ import util.Logger;
 
 public class httpClient {
 
-	String server = "10.3.3.171";
+	String server = "127.0.0.1";
 	int port = 5000;
 	Session session;
 
@@ -107,7 +107,7 @@ public class httpClient {
 
 			int index = 0;
 
-			while (index < 1000) {
+			while (index < 100000) {
 
 				String str = "GET http://" + server + "/ HTTP/1.1\r\n";
 				session.write(str.getBytes());
