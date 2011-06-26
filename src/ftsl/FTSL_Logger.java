@@ -35,8 +35,7 @@ public class FTSL_Logger extends Thread {
 	FileOutputStream sentMessagesInfoOut = null;
 	FileOutputStream receivedBufferOut = null;
 
-	
-	/* ************************* Constructors */ 
+	/* ************************* Constructors */
 	public FTSL_Logger() {
 
 		init();
@@ -53,9 +52,8 @@ public class FTSL_Logger extends Thread {
 		init();
 
 	}
-	
-	
-	/* ************************* */ 
+
+	/* ************************* */
 
 	public void init() {
 		sessionF = new File(session);
@@ -108,7 +106,6 @@ public class FTSL_Logger extends Thread {
 
 	/* ***************************** */
 
-
 	public void log(Session session) {
 
 		try {
@@ -116,7 +113,7 @@ public class FTSL_Logger extends Thread {
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
-		System.out.println("loge is false now");
+		System.out.println("loge is false now 1");
 
 		ftslF = new File(ftsl);
 
@@ -129,8 +126,9 @@ public class FTSL_Logger extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		System.out.println("loge is false now 2");
 
-		/////////////////////// start log the session
+		// ///////////////////// start log the session
 
 		String log = "";
 
@@ -151,20 +149,26 @@ public class FTSL_Logger extends Thread {
 					.getSentMessagesInfo();
 			while (index < SentMessagesInfo.size()) {
 				MessageInfo info = SentMessagesInfo.get(index);
-				log = log + info.getStart() + " " + info.getIndex() + " "
-						+ info.getEnd() + " " + info.getId() + "\n";
+				log = log + info.getStart() + " " + info.getEnd() + " "
+						+ info.getId() + "\n";
 				index++;
 			}
+			System.out.println("loge is false now 3");
 
 			log = log + "sentBuffer\n";
 
 			index = 0;
 			Vector<FTSLMessage> sentBuffer = session.getSentBuffer();
 			while (index < sentBuffer.size()) {
+
 				FTSLMessage packet = sentBuffer.get(index);
 				log = log + packet.toString_() + "#####\n";
+				System.out.println(sentBuffer.size()+" "+index);
 				index++;
+				
 			}
+
+			System.out.println("loge is false now 4");
 
 			log = log + "receivedBuffer\n";
 			HashMap<Integer, String> receivedBuffer = session
@@ -182,6 +186,7 @@ public class FTSL_Logger extends Thread {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		System.out.println("loge is false now 5");
 
 		// ////////////////////////////////////////////// end log the session
 
@@ -194,18 +199,22 @@ public class FTSL_Logger extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		System.out.println("loge is false now 6");
+
 
 		sessionF.delete();
 		sentBufferF.delete();
 		sentMessagesInfoF.delete();
 		receivedBufferF.delete();
 
+		System.out.println("loge is false now 7");
+
 		init();
 		lock.unlock();
 		System.out.println("loge is true now");
 
 	}
-	
+
 	/* ***************************** */
 
 	public void logSessionInfo(String key, String value) {
@@ -286,8 +295,8 @@ public class FTSL_Logger extends Thread {
 	/* ***************************** */
 
 	public void logMessageInfo(MessageInfo info) {
-		String log = info.getStart() + " " + info.getIndex() + " "
-				+ info.getEnd() + " " + info.getId() + "\n";
+		String log = info.getStart() + " " + info.getEnd() + " " + info.getId()
+				+ "\n";
 
 		try {
 			lock.lock();
@@ -300,9 +309,8 @@ public class FTSL_Logger extends Thread {
 		}
 
 	}
-	
-	/* ***************************** */
 
+	/* ***************************** */
 
 	public void logSentMessage(String message) {
 		String log = message + "\n";
@@ -318,9 +326,8 @@ public class FTSL_Logger extends Thread {
 		}
 
 	}
-	
-	/* ***************************** */
 
+	/* ***************************** */
 
 	public void logSentMessage(FTSLMessage message) {
 		String log = message.toString_() + "\n" + "#####\n";
@@ -401,9 +408,6 @@ public class FTSL_Logger extends Thread {
 						info.setStart(Integer.valueOf(log.substring(0, index)));
 						log = log.substring(index + 1);
 						index = log.indexOf(" ");
-						info.setIndex(Integer.valueOf(log.substring(0, index)));
-						log = log.substring(index + 1);
-						index = log.indexOf(" ");
 						info.setEnd(Integer.valueOf(log.substring(0, index)));
 						info.setId(Integer.valueOf(log.substring(index + 1)));
 						sentMessagesInfo.add(info);
@@ -474,7 +478,7 @@ public class FTSL_Logger extends Thread {
 				int lastSentPacketID = session.getLastSentPacketID();
 				int lastRecievedPacketID = session.getLastRecievedPacketID();
 				int sendMessageID = session.getSendMessageID();
-//				int recieveMessageID = session.getRecieveMessageID();
+				// int recieveMessageID = session.getRecieveMessageID();
 				while (log != null) {
 
 					int index = 0;
@@ -490,7 +494,7 @@ public class FTSL_Logger extends Thread {
 						index = log.indexOf(":");
 						sendMessageID = Integer.valueOf(log
 								.substring(index + 2));
-					} 
+					}
 
 				}
 				session.setLastSentPacketID(lastSentPacketID);
@@ -551,9 +555,6 @@ public class FTSL_Logger extends Thread {
 					info.setStart(Integer.valueOf(log.substring(0, index)));
 					log = log.substring(index + 1);
 					index = log.indexOf(" ");
-					info.setIndex(Integer.valueOf(log.substring(0, index)));
-					log = log.substring(index + 1);
-					index = log.indexOf(" ");
 					info.setEnd(Integer.valueOf(log.substring(0, index)));
 					info.setId(Integer.valueOf(log.substring(index + 1)));
 					session.addMessageInfo(info);
@@ -600,9 +601,9 @@ public class FTSL_Logger extends Thread {
 
 		return session;
 	}
-	
+
 	/* ***************************** */
-	
+
 	public class Lock {
 
 		private boolean isLocked = false;

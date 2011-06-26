@@ -274,11 +274,6 @@ public class Session {
 
 	}
 
-	public void updateMessageInfo(int pid) {
-
-		SentMessagesInfo.lastElement().setIndex(pid);
-	}
-
 	/* **************************** */
 
 	public int removeDeliveredMessages(int rpid) {
@@ -298,6 +293,8 @@ public class Session {
 			FTSLMessage message = sentBuffer.get(index);
 			if (message.getHeader().getPID() <= id) {
 				sentBuffer.remove(index);
+				System.out.println("##################################");
+
 			} else
 				index = sentBuffer.size();
 		}
