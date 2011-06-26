@@ -119,7 +119,7 @@ public class httpClient {
 				session.write(str.getBytes());
 				session.flush();
 				
-				System.out.println("Client sent: "+System.currentTimeMillis());
+				//System.out.println("Client sent: "+System.currentTimeMillis());
 
 				//Logger.log("Client wrote: \n"+str);
 

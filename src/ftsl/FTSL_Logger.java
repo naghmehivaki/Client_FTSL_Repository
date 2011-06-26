@@ -149,28 +149,37 @@ public class FTSL_Logger extends Thread {
 					.getSentMessagesInfo();
 			while (index < SentMessagesInfo.size()) {
 				MessageInfo info = SentMessagesInfo.get(index);
-				log = log + info.getStart() + " " + info.getEnd() + " "
-						+ info.getId() + "\n";
+				log = log + info.getStart() + " " + info.getEnd() + " "+ info.getId() + "\n";
 				index++;
 			}
+			ftslOut.write(log.getBytes());
 			System.out.println("loge is false now 3");
 
-			log = log + "sentBuffer\n";
+			log = "sentBuffer\n";
 
 			index = 0;
+			int count=0;
 			Vector<FTSLMessage> sentBuffer = session.getSentBuffer();
 			while (index < sentBuffer.size()) {
 
 				FTSLMessage packet = sentBuffer.get(index);
 				log = log + packet.toString_() + "#####\n";
-				System.out.println(sentBuffer.size()+" "+index);
+			//	System.out.println(sentBuffer.size()+" "+index);
+				if (count==100){
+					ftslOut.write(log.getBytes());
+					log="";
+					count=0;
+					
+				}
+				count++;
 				index++;
 				
 			}
+			ftslOut.write(log.getBytes());
 
 			System.out.println("loge is false now 4");
 
-			log = log + "receivedBuffer\n";
+			log = "receivedBuffer\n";
 			HashMap<Integer, String> receivedBuffer = session
 					.getReceivedBuffer();
 			Set<Integer> ids = receivedBuffer.keySet();

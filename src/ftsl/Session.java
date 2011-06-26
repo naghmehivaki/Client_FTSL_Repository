@@ -12,8 +12,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
-import javax.security.auth.login.FailedLoginException;
-
 import util.Logger;
 
 public class Session {
@@ -21,11 +19,12 @@ public class Session {
 	int MAX_TIME_TO_TRY = 1000; // seconds
 	boolean stop = false;
 	int DEFAULT_VALUE = 1000;
-	static final int LOGGING_PERIOD = 10;
+	static final int LOGGING_PERIOD = 20;
 	int sleepTime = DEFAULT_VALUE;
 	int MAX_BUFFER_SIZE = 1000;
 	FTSL_Logger logger;
 	Timer timer = new Timer();
+	int lastRPID=0;
 
 	// ///////////////////////////////////////// Session Basic Info
 	Socket socket;
@@ -277,28 +276,34 @@ public class Session {
 	/* **************************** */
 
 	public int removeDeliveredMessages(int rpid) {
-		int index = 0;
 		int id = rpid;
-		while (index < SentMessagesInfo.size()) {
-			MessageInfo info = SentMessagesInfo.get(index);
-			if (info.getEnd() != 0 & info.getEnd() <= rpid) {
+
+		if (rpid > lastRPID) {
+			lastRPID=rpid;
+			int index = 0;
+			while (index < SentMessagesInfo.size()) {
+				MessageInfo info = SentMessagesInfo.get(index);
 				id = info.getEnd();
-				SentMessagesInfo.remove(index);
-			} else
-				index = SentMessagesInfo.size();
-		}
+				if (id <= rpid) {
+					SentMessagesInfo.remove(index);
+				} else
+					index = SentMessagesInfo.size();
+			}
 
-		index = 0;
-		while (index < sentBuffer.size()) {
-			FTSLMessage message = sentBuffer.get(index);
-			if (message.getHeader().getPID() <= id) {
-				sentBuffer.remove(index);
-				System.out.println("##################################");
+			index = 0;
+			while (index < sentBuffer.size()) {
+				FTSLMessage message = sentBuffer.get(index);
+				if (message.getHeader().getPID() <= rpid) {
+					sentBuffer.remove(index);
+					System.out.println("########################## 2: "
+							+ sentBuffer.size());
 
-			} else
-				index = sentBuffer.size();
+				} else
+					index = sentBuffer.size();
+			}
 		}
 		return id;
+
 	}
 
 	/* **************************** */
