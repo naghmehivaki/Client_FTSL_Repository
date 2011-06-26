@@ -112,7 +112,7 @@ public class httpClient {
 				String str = "GET http://" + server + "/ HTTP/1.1\r\n";
 				session.write(str.getBytes());
 
-				//Logger.log("Client wrote: \n"+str);
+				//Logger.log("Client wrote: \n" + str);
 			
 				str = "Host: " + server + "\r\n";
 				str = str + "\r\n";
@@ -120,13 +120,10 @@ public class httpClient {
 				session.flush();
 				
 				//System.out.println("Client sent: "+System.currentTimeMillis());
-
-				//Logger.log("Client wrote: \n"+str);
+				//Logger.log("Client wrote: \n" + str);
 
 				index++;
-
 			}
-
 		}
 	}
 
