@@ -343,7 +343,6 @@ public class Session {
 				try {
 					read = inputStream.read(packet);
 				} catch (IOException e) {
-					e.printStackTrace();
 					read=0;
 				}
 			}
@@ -535,7 +534,6 @@ public class Session {
 			outputStream.write(buffer);
 			outputStream.flush();
 		} catch (IOException e) {
-			e.printStackTrace();
 			stop = true;
 			HandleFailure();
 			stop = false;
@@ -590,7 +588,6 @@ public class Session {
 			inputStream = new ObjectInputStream(socket.getInputStream());
 
 		} catch (IOException e2) {
-			e2.printStackTrace();
 			try {
 				Thread.sleep(sleepTime);
 			} catch (InterruptedException e1) {
