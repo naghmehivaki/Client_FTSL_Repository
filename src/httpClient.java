@@ -69,6 +69,7 @@ public class httpClient {
 				read = session.read(buffer, pos, len - pos);
 
 			}
+			Logger.log("client doesn't read anything now ...");
 		}			
 	}
 	
@@ -107,7 +108,7 @@ public class httpClient {
 
 			int index = 0;
 
-			while (index < 100000) {
+			while (index < 10000) {
 
 				String str = "GET http://" + server + "/ HTTP/1.1\r\n";
 				session.write(str.getBytes());
@@ -119,9 +120,14 @@ public class httpClient {
 				session.write(str.getBytes());
 				session.flush();
 				
-				//System.out.println("Client sent: "+System.currentTimeMillis());
+				System.out.println("Client wrote: \n" + index);
 				//Logger.log("Client wrote: \n" + str);
-
+				try {
+					Thread.currentThread().sleep(1);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				index++;
 			}
 		}
