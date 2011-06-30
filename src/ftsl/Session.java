@@ -28,7 +28,7 @@ public class Session {
 	int lastRPID=0;
 	int lastEnd=0;
 
-	// ///////////////////////////////////////// Session Basic Info
+	/////////////////////////////////////////// Session Basic Info
 	Socket socket;
 	ObjectInputStream inputStream;
 	ObjectOutputStream outputStream;
@@ -102,7 +102,6 @@ public class Session {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
 
 	public synchronized void setSendMessageID(int sendMessageID) {
