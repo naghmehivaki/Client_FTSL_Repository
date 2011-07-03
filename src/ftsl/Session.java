@@ -16,7 +16,7 @@ import util.Logger;
 
 public class Session {
 
-	int MAX_TIME_TO_TRY = 1000; // seconds
+	int MAX_WAIT_TIME = 1000; // seconds
 	boolean stopReading = false;
 	boolean stopWriting = false;
 	int DEFAULT_VALUE = 1000;
@@ -27,6 +27,7 @@ public class Session {
 	Timer timer = new Timer();
 	int lastRPID=0;
 	int lastEnd=0;
+	boolean isTransactional = false;
 
 	/////////////////////////////////////////// Session Basic Info
 	Socket socket;
@@ -40,14 +41,111 @@ public class Session {
 	Vector<FTSLMessage> sentBuffer = new Vector<FTSLMessage>();
 	HashMap<Integer, String> receivedBuffer = new HashMap<Integer, String>();
 	// ///////////////////////////////////////// Messages Info
-	int sendMessageID = 1;
+	int sendMessageID = 0;
 	Vector<MessageInfo> SentMessagesInfo = new Vector<MessageInfo>();
 
 	/* ****************************** Constructor */
 	public Session() {
 
 	}
+	
+	public Session(String server, int port, boolean t, int time) {
+		try {
+			
+			isTransactional=t;
+			MAX_WAIT_TIME=time;
 
+			sessionID = String.valueOf(System.currentTimeMillis())
+					+ String.valueOf((new Random()).nextInt(10000));
+			// Logger.log("Session Id "+ sessionID +
+			// " is assigned to the session.");
+
+			socket = new Socket(server, port);
+			// Logger.log("Client session created new socket "+
+			// socket.toString() + " to server "+server);
+
+			outputStream = new ObjectOutputStream(socket.getOutputStream());
+			outputStream.flush();
+			inputStream = new ObjectInputStream(socket.getInputStream());
+
+			writeSessionID();
+			logger = new FTSL_Logger(sessionID);
+
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		logger.logSession(this);
+		timer.scheduleAtFixedRate(new logTask(this, logger),
+				LOGGING_PERIOD * 1000, LOGGING_PERIOD * 1000);
+	}
+	
+	public Session(String server, int port, boolean t) {
+		try {
+			
+			isTransactional=t;
+
+			sessionID = String.valueOf(System.currentTimeMillis())
+					+ String.valueOf((new Random()).nextInt(10000));
+			// Logger.log("Session Id "+ sessionID +
+			// " is assigned to the session.");
+
+			socket = new Socket(server, port);
+			// Logger.log("Client session created new socket "+
+			// socket.toString() + " to server "+server);
+
+			outputStream = new ObjectOutputStream(socket.getOutputStream());
+			outputStream.flush();
+			inputStream = new ObjectInputStream(socket.getInputStream());
+
+			writeSessionID();
+			logger = new FTSL_Logger(sessionID);
+
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		logger.logSession(this);
+		timer.scheduleAtFixedRate(new logTask(this, logger),
+				LOGGING_PERIOD * 1000, LOGGING_PERIOD * 1000);
+	}
+	
+	public Session(String server, int port, int time) {
+		try {
+			
+			MAX_WAIT_TIME=time;
+
+			sessionID = String.valueOf(System.currentTimeMillis())
+					+ String.valueOf((new Random()).nextInt(10000));
+			// Logger.log("Session Id "+ sessionID +
+			// " is assigned to the session.");
+
+			socket = new Socket(server, port);
+			// Logger.log("Client session created new socket "+
+			// socket.toString() + " to server "+server);
+
+			outputStream = new ObjectOutputStream(socket.getOutputStream());
+			outputStream.flush();
+			inputStream = new ObjectInputStream(socket.getInputStream());
+
+			writeSessionID();
+			logger = new FTSL_Logger(sessionID);
+
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		logger.logSession(this);
+		timer.scheduleAtFixedRate(new logTask(this, logger),
+				LOGGING_PERIOD * 1000, LOGGING_PERIOD * 1000);
+	}
+	
 	public Session(String server, int port) {
 		try {
 
@@ -79,7 +177,9 @@ public class Session {
 	}
 
 	/* ****************************** setters and getters */
-
+	public void setTimeut(int time){
+		MAX_WAIT_TIME=time;
+	}
 	public Socket getSocket() {
 		return socket;
 	}
@@ -99,7 +199,6 @@ public class Session {
 			this.outputStream = new ObjectOutputStream(socket.getOutputStream());
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -372,6 +471,69 @@ public class Session {
 			return read;
 		}
 	}
+	
+	public int read(byte buffer[], int pos, int len, int time) {
+
+		MAX_WAIT_TIME=time;
+		while (stopReading == true){
+			System.out.println(":(((((((((((( 0");
+		}
+
+		int expectedID = lastRecievedPacketID + 1;
+
+		if (receivedBuffer.containsKey(expectedID)) {
+			byte[] tempBuffer = receivedBuffer.get(expectedID).getBytes();
+			processInputPacket(tempBuffer);
+		
+			for (int i = 0; i < tempBuffer.length; i++)
+				buffer[pos + i] = tempBuffer[i];
+
+			return tempBuffer.length;
+
+		} else {
+			int read = 0;
+			byte[] packet = new byte[len];
+
+			while (read == 0) {
+				try {
+					read = inputStream.read(packet);
+				} catch (IOException e) {
+					read=0;
+				}
+			}
+
+			int test = 1;
+			while (read != -1 & test == 1) {
+				
+				int pSize=0;
+				if (read !=0)
+					pSize = processInputPacket(packet);
+
+				if (pSize == 0) {
+					try {
+						while (stopReading == true){
+							System.out.println(":(((((((((((( 0");
+						}
+						read = inputStream.read(packet);
+					} catch (IOException e) {
+
+						e.printStackTrace();
+						read=0;
+					}
+				} else {
+					test = 0;
+					read = pSize;
+					for (int i = 0; i < read; i++)
+						buffer[pos + i] = packet[i];
+				}
+				if (read == -1)
+					read=0;
+			}
+			Logger.log("####### returning it");
+			return read;
+		}
+	}
+
 
 	public int processInputPacket(byte buffer[]) {
 
@@ -558,6 +720,26 @@ public class Session {
 			stopWriting = false;
 		}
 	}
+	
+	
+	public void write(byte[] buffer, int time) {
+
+		MAX_WAIT_TIME=time;
+		
+		while (stopWriting == true);
+		buffer = processOutputPacket(buffer);
+		try {
+			outputStream.write(buffer);
+			outputStream.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+			stopReading = true;
+			stopWriting = true;
+			HandleFailure();
+			stopWriting = false;
+		}
+	}
+
 
 	public void writeSessionID() {
 
@@ -619,7 +801,7 @@ public class Session {
 				e1.printStackTrace();
 			}
 			sleepTime = sleepTime * 2;
-			if (sleepTime > MAX_TIME_TO_TRY * 1000)
+			if (sleepTime > MAX_WAIT_TIME * 1000)
 				System.exit(1);
 
 			HandleFailure();
@@ -651,7 +833,7 @@ public class Session {
 					e1.printStackTrace();
 				}
 				sleepTime = sleepTime * 2;
-				if (sleepTime > MAX_TIME_TO_TRY * 1000)
+				if (sleepTime > MAX_WAIT_TIME * 1000)
 					System.exit(1);
 				HandleFailure();
 			}
