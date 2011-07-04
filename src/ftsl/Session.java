@@ -721,7 +721,49 @@ public class Session {
 			stopWriting = false;
 		}
 	}
+
+	public void write(byte[] buffer, boolean endOfMsg) {
+
+		while (stopWriting == true);
 	
+		buffer = processOutputPacket(buffer, endOfMsg);
+		try {
+			outputStream.write(buffer);
+			outputStream.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+			stopReading = true;
+			stopWriting = true;
+			HandleFailure();
+			stopWriting = false;
+		}
+		if (endOfMsg) {
+			eoTheLastSentMessage=lastSentPacketID;
+			addMessageInfo();
+			increaseSendMessageID();
+		}
+	}
+	public void write(byte[] buffer, boolean endOfMsg, int time) {
+
+		MAX_WAIT_TIME=time;
+		while (stopWriting == true);
+	
+		buffer = processOutputPacket(buffer, endOfMsg);
+		try {
+			outputStream.write(buffer);
+			outputStream.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+			stopReading = true;
+			stopWriting = true;
+			HandleFailure();
+			stopWriting = false;
+		}
+		if (endOfMsg) {
+			addMessageInfo();
+			increaseSendMessageID();
+		}
+	}
 	
 	public void write(byte[] buffer, int time) {
 
@@ -761,12 +803,28 @@ public class Session {
 		}
 	}
 
+
 	public byte[] processOutputPacket(byte[] packet) {
 
 		increaseLastSentPacketID();
 		FTSLHeader header = new FTSLHeader(sessionID, "APP", lastSentPacketID,
 				lastRecievedPacketID);
-		FTSLMessage pkt = new FTSLMessage(packet, header);
+		MessageProperties properties= new MessageProperties(packet.length);
+		FTSLMessage pkt = new FTSLMessage(header, properties, packet);
+		byte[] buffer = pkt.toByte_();
+
+		keepSentPacket(pkt);
+
+		return buffer;
+
+	}
+	public byte[] processOutputPacket(byte[] packet, boolean endOfMsg) {
+
+		increaseLastSentPacketID();
+		FTSLHeader header = new FTSLHeader(sessionID, "APP", lastSentPacketID,
+				lastRecievedPacketID);
+		MessageProperties properties= new MessageProperties(packet.length, endOfMsg);
+		FTSLMessage pkt = new FTSLMessage(header, properties, packet);
 		byte[] buffer = pkt.toByte_();
 
 		keepSentPacket(pkt);
@@ -775,7 +833,7 @@ public class Session {
 
 	}
 
-	public void flush() { // the end of a stream of the message
+	public void eom() { // the end of a stream of the message
 		addMessageInfo();
 		increaseSendMessageID();
 	}

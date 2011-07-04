@@ -117,8 +117,7 @@ public class httpClient {
 			
 				str = "Host: " + server + "\r\n";
 				str = str + "\r\n";
-				session.write(str.getBytes());
-				session.flush();
+				session.write(str.getBytes( ), true);
 				
 				System.out.println("Client wrote: \n" + index);
 				//Logger.log("Client wrote: \n" + str);
