@@ -28,6 +28,7 @@ public class Session {
 	int lastRPID=0;
 	int lastEnd=0;
 	boolean isTransactional = false;
+	
 
 	/////////////////////////////////////////// Session Basic Info
 	Socket socket;
@@ -37,6 +38,7 @@ public class Session {
 
 	// ///////////////////////////////////////// Packets Info
 	int lastSentPacketID = 0;
+	int eoTheLastSentMessage = 0;
 	int lastRecievedPacketID = 0;
 	Vector<FTSLMessage> sentBuffer = new Vector<FTSLMessage>();
 	HashMap<Integer, String> receivedBuffer = new HashMap<Integer, String>();
