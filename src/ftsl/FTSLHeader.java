@@ -27,8 +27,6 @@ public class FTSLHeader implements Serializable {
 		this.FLAG=flag;
 		this.PID = pid;
 		this.rPID = rpid;
-	//	this.MessageSize=size;
-
 	}
 	
 	public FTSLHeader(String sid, String flag, int rpid) {
