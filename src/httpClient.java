@@ -1,4 +1,5 @@
 
+import ftsl.MessageProperties;
 import ftsl.Session;
 import util.Logger;
 
@@ -43,7 +44,8 @@ public class httpClient {
 			byte[] buffer = new byte[1024];
 			int pos = 0;
 			int len = 1024;
-			read = session.read(buffer, pos, len - pos);
+			MessageProperties msgProperties= session.read(buffer, pos, len - pos);
+			read = msgProperties.getSize();
 			
 			while (read != -1) {
 //				boolean newRequest = processInputbuffer(buffer, pos, read);
@@ -66,7 +68,8 @@ public class httpClient {
 //					pos = pos + read;
 //				}
 				
-				read = session.read(buffer, pos, len - pos);
+				msgProperties= session.read(buffer, pos, len - pos);
+				read = msgProperties.getSize();
 
 			}
 			Logger.log("client doesn't read anything now ...");

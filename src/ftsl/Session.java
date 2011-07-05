@@ -40,8 +40,9 @@ public class Session {
 	int lastSentPacketID = 0;
 	int eoTheLastSentMessage = 0;
 	int lastRecievedPacketID = 0;
+	int eoTheLastRecievedMessage = 0;
 	Vector<FTSLMessage> sentBuffer = new Vector<FTSLMessage>();
-	HashMap<Integer, String> receivedBuffer = new HashMap<Integer, String>();
+	HashMap<Integer, FTSLMessage> receivedBuffer = new HashMap<Integer, FTSLMessage>();
 	// ///////////////////////////////////////// Messages Info
 	int sendMessageID = 0;
 	Vector<MessageInfo> SentMessagesInfo = new Vector<MessageInfo>();
@@ -186,11 +187,11 @@ public class Session {
 		return socket;
 	}
 
-	public HashMap<Integer, String> getReceivedBuffer() {
+	public HashMap<Integer, FTSLMessage> getReceivedBuffer() {
 		return receivedBuffer;
 	}
 
-	public void setReceivedBuffer(HashMap<Integer, String> receivedBuffer) {
+	public void setReceivedBuffer(HashMap<Integer, FTSLMessage> receivedBuffer) {
 		this.receivedBuffer = receivedBuffer;
 	}
 
@@ -295,7 +296,7 @@ public class Session {
 		sentBuffer.add(message);
 	}
 
-	public void addreceivedMessage(int id, String message) {
+	public void addReceivedMessage(int id, FTSLMessage message) {
 		receivedBuffer.put(id, message);
 	}
 
@@ -412,8 +413,8 @@ public class Session {
 	}
 
 	/* ************************************ */
-
-	public int read(byte buffer[], int pos, int len) {
+	
+	public MessageProperties read(byte buffer[], int pos, int len) {
 
 		while (stopReading == true){
 			System.out.println(":(((((((((((( 0");
@@ -422,7 +423,7 @@ public class Session {
 		int expectedID = lastRecievedPacketID + 1;
 
 		if (receivedBuffer.containsKey(expectedID)) {
-			byte[] tempBuffer = receivedBuffer.get(expectedID).getBytes();
+			byte[] tempBuffer = receivedBuffer.get(expectedID).toByte_();
 			processInputPacket(tempBuffer);
 		
 			for (int i = 0; i < tempBuffer.length; i++)
@@ -443,13 +444,13 @@ public class Session {
 			}
 
 			int test = 1;
+			MessageProperties msgProperties;
 			while (read != -1 & test == 1) {
 				
-				int pSize=0;
 				if (read !=0)
-					pSize = processInputPacket(packet);
+					msgProperties = processInputPacket(packet);
 
-				if (pSize == 0) {
+				if (msgProperties.getSize() == 0) {
 					try {
 						while (stopReading == true){
 							System.out.println(":(((((((((((( 0");
@@ -462,7 +463,7 @@ public class Session {
 					}
 				} else {
 					test = 0;
-					read = pSize;
+					read = msgProperties.getSize();
 					for (int i = 0; i < read; i++)
 						buffer[pos + i] = packet[i];
 				}
@@ -470,11 +471,11 @@ public class Session {
 					read=0;
 			}
 			Logger.log("####### returning it");
-			return read;
+			return msgProperties;
 		}
 	}
 	
-	public int read(byte buffer[], int pos, int len, int time) {
+	public MessageProperties read(byte buffer[], int pos, int len, int time) {
 
 		MAX_WAIT_TIME=time;
 		while (stopReading == true){
@@ -484,7 +485,7 @@ public class Session {
 		int expectedID = lastRecievedPacketID + 1;
 
 		if (receivedBuffer.containsKey(expectedID)) {
-			byte[] tempBuffer = receivedBuffer.get(expectedID).getBytes();
+			byte[] tempBuffer = receivedBuffer.get(expectedID).toByte_();
 			processInputPacket(tempBuffer);
 		
 			for (int i = 0; i < tempBuffer.length; i++)
@@ -505,13 +506,13 @@ public class Session {
 			}
 
 			int test = 1;
+			MessageProperties msgProperties;
 			while (read != -1 & test == 1) {
 				
-				int pSize=0;
 				if (read !=0)
-					pSize = processInputPacket(packet);
+					msgProperties = processInputPacket(packet);
 
-				if (pSize == 0) {
+				if (msgProperties.getSize() == 0) {
 					try {
 						while (stopReading == true){
 							System.out.println(":(((((((((((( 0");
@@ -524,7 +525,7 @@ public class Session {
 					}
 				} else {
 					test = 0;
-					read = pSize;
+					read = msgProperties.getSize();
 					for (int i = 0; i < read; i++)
 						buffer[pos + i] = packet[i];
 				}
@@ -532,57 +533,68 @@ public class Session {
 					read=0;
 			}
 			Logger.log("####### returning it");
-			return read;
+			return msgProperties;
 		}
+	}
+	
+	public void confirm(){
+		eoTheLastRecievedMessage=lastRecievedPacketID;
 	}
 
 
-	public int processInputPacket(byte buffer[]) {
+	public MessageProperties processInputPacket(byte buffer[]) {
 
+		MessageProperties msgProperties=new MessageProperties();
 		String packet = new String(buffer);
 		if (!packet.startsWith(FTSLHeader.protocol))
-			return 0;
+			return msgProperties;
 
 		int result = processFTSLHeader(buffer);
 
 		if (result == 0) {
-			return 0;
+			return msgProperties;
 
 		} else {
 
 			int index = packet.indexOf("\n");
-			String h = packet.substring(0, index);
+			String str= packet.substring(0,index);
+			index= str.indexOf("|");
+			String h = str.substring(0, index-1);
+			String p = str.substring(index+2);
 			String b = packet.substring(index + 1);
 
 			byte[] tempBody = b.getBytes();
 			for (int i = 0; i < tempBody.length; i++)
 				buffer[i] = tempBody[i];
 
-			FTSLHeader header = FTSLHeader.valueOf_(h);
-			return header.getMessageSize();
+			msgProperties = MessageProperties.valueOf_(p);
+			return msgProperties;
 		}
 	}
 
 	public int processFTSLHeader(byte[] buffer) {
 
-		System.out.println(":((((((( 1");
 		String packet = new String(buffer);
 		int index = packet.indexOf("\n");
 		String str = packet.substring(0, index);
-
-		FTSLHeader header = FTSLHeader.valueOf_(str);
+		
+		FTSLHeader header=new FTSLHeader();
+		
+		if (str.contains("|"))
+			header=FTSLHeader.valueOf_(str.substring(0,str.indexOf("|")-1));
+		else
+			header = FTSLHeader.valueOf_(str);
 
 		String flag = header.getFLAG();
 		String sid = header.getSID();
 		int pid = header.getPID();
 		int rpid = header.getrPID();
-
+		
+		
 		if (flag.compareTo("APP") == 0) {
-			System.out.println(":((((((( 3");
 
 			int expectedPID = lastRecievedPacketID + 1;
 			if (pid == expectedPID) {
-				System.out.println(":((((((( 4");
 
 				// it is the right message, no need to check anything else
 				increaseLastReceivedPacketID();
@@ -590,14 +602,10 @@ public class Session {
 				return 1;
 
 			} else if (pid<expectedPID){
-				System.out.println(":((((((( 5");
-
 				return 0;
 				
 			}else {
-				System.out.println(":((((((( 6");
-
-				receivedBuffer.put(pid, packet);
+				receivedBuffer.put(pid, FTSLMessage.valueOf_(packet));
 				if (!receivedBuffer.containsKey(pid - 1)) {
 					FTSLHeader h = new FTSLHeader(sid, "NAK", pid,
 							lastRecievedPacketID);
