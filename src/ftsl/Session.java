@@ -542,8 +542,22 @@ public class Session {
 	public void confirm(){
 		eoTheLastRecievedMessage=lastRecievedPacketID;
 	}
+	public void confirm(int messageID){
+		eoTheLastRecievedMessage=lastRecievedPacketID;
+	}
 	
 	public void commit(){
+		
+	}
+
+	public void commit(int messageID){
+		
+	}
+	
+	public void abort(){
+		
+	}
+	public void abort(int messageID){
 		
 	}
 
@@ -929,7 +943,6 @@ public class Session {
 	}
 
 	/* ********************************* */
-
 	class logTask extends TimerTask {
 		Session session;
 		FTSL_Logger logger;
@@ -938,10 +951,8 @@ public class Session {
 			session = s;
 			logger = l;
 		}
-
 		public void run() {
 			logger.log(session);
 		}
 	}
-
 }

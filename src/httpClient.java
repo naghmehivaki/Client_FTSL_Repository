@@ -43,10 +43,10 @@ public class httpClient {
 			byte[] buffer = new byte[1024];
 			int pos = 0;
 			int len = 1024;
-			MessageHandler msgProperties= session.read(buffer, pos, len - pos);
-			read = msgProperties.getSize();
-			if (msgProperties.isEom())
-				session.confirm();
+			MessageHandler msgHandler= session.read(buffer, pos, len - pos);
+			read = msgHandler.getSize();
+			if (msgHandler.isEom())
+				msgHandler.confirm();
 			
 			while (read != -1) {
 //				boolean newRequest = processInputbuffer(buffer, pos, read);
@@ -69,10 +69,10 @@ public class httpClient {
 //					pos = pos + read;
 //				}
 				
-				msgProperties= session.read(buffer, pos, len - pos);
-				read = msgProperties.getSize();
-				if (msgProperties.isEom())
-					session.confirm();
+				msgHandler= session.read(buffer, pos, len - pos);
+				read = msgHandler.getSize();
+				if (msgHandler.isEom())
+					msgHandler.confirm();
 
 			}
 			Logger.log("client doesn't read anything now ...");
