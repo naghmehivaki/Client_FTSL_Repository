@@ -414,7 +414,7 @@ public class Session {
 
 	/* ************************************ */
 	
-	public MessageProperties read(byte buffer[], int pos, int len) {
+	public MessageHandler read(byte buffer[], int pos, int len) {
 
 		while (stopReading == true){
 			System.out.println(":(((((((((((( 0");
@@ -423,13 +423,14 @@ public class Session {
 		int expectedID = lastRecievedPacketID + 1;
 
 		if (receivedBuffer.containsKey(expectedID)) {
-			byte[] tempBuffer = receivedBuffer.get(expectedID).toByte_();
+			FTSLMessage message= receivedBuffer.get(expectedID);
+			byte[] tempBuffer = message.toByte_();
 			processInputPacket(tempBuffer);
 		
 			for (int i = 0; i < tempBuffer.length; i++)
 				buffer[pos + i] = tempBuffer[i];
 
-			return tempBuffer.length;
+			return message.getProperties();
 
 		} else {
 			int read = 0;
@@ -444,7 +445,7 @@ public class Session {
 			}
 
 			int test = 1;
-			MessageProperties msgProperties;
+			MessageHandler msgProperties=new MessageHandler();
 			while (read != -1 & test == 1) {
 				
 				if (read !=0)
@@ -475,7 +476,7 @@ public class Session {
 		}
 	}
 	
-	public MessageProperties read(byte buffer[], int pos, int len, int time) {
+	public MessageHandler read(byte buffer[], int pos, int len, int time) {
 
 		MAX_WAIT_TIME=time;
 		while (stopReading == true){
@@ -485,13 +486,14 @@ public class Session {
 		int expectedID = lastRecievedPacketID + 1;
 
 		if (receivedBuffer.containsKey(expectedID)) {
-			byte[] tempBuffer = receivedBuffer.get(expectedID).toByte_();
+			FTSLMessage message=receivedBuffer.get(expectedID);
+			byte[] tempBuffer = message.toByte_();
 			processInputPacket(tempBuffer);
 		
 			for (int i = 0; i < tempBuffer.length; i++)
 				buffer[pos + i] = tempBuffer[i];
 
-			return tempBuffer.length;
+			return message.getProperties();
 
 		} else {
 			int read = 0;
@@ -506,7 +508,7 @@ public class Session {
 			}
 
 			int test = 1;
-			MessageProperties msgProperties;
+			MessageHandler msgProperties=new MessageHandler();
 			while (read != -1 & test == 1) {
 				
 				if (read !=0)
@@ -540,11 +542,14 @@ public class Session {
 	public void confirm(){
 		eoTheLastRecievedMessage=lastRecievedPacketID;
 	}
+	
+	public void commit(){
+		
+	}
 
+	public MessageHandler processInputPacket(byte buffer[]) {
 
-	public MessageProperties processInputPacket(byte buffer[]) {
-
-		MessageProperties msgProperties=new MessageProperties();
+		MessageHandler msgProperties=new MessageHandler();
 		String packet = new String(buffer);
 		if (!packet.startsWith(FTSLHeader.protocol))
 			return msgProperties;
@@ -567,7 +572,7 @@ public class Session {
 			for (int i = 0; i < tempBody.length; i++)
 				buffer[i] = tempBody[i];
 
-			msgProperties = MessageProperties.valueOf_(p);
+			msgProperties = MessageHandler.valueOf_(p);
 			return msgProperties;
 		}
 	}
@@ -817,7 +822,7 @@ public class Session {
 		increaseLastSentPacketID();
 		FTSLHeader header = new FTSLHeader(sessionID, "APP", lastSentPacketID,
 				lastRecievedPacketID);
-		MessageProperties properties= new MessageProperties(packet.length);
+		MessageHandler properties= new MessageHandler(packet.length);
 		FTSLMessage pkt = new FTSLMessage(header, properties, packet);
 		byte[] buffer = pkt.toByte_();
 
@@ -831,7 +836,7 @@ public class Session {
 		increaseLastSentPacketID();
 		FTSLHeader header = new FTSLHeader(sessionID, "APP", lastSentPacketID,
 				lastRecievedPacketID);
-		MessageProperties properties= new MessageProperties(packet.length, endOfMsg);
+		MessageHandler properties= new MessageHandler(packet.length, endOfMsg);
 		FTSLMessage pkt = new FTSLMessage(header, properties, packet);
 		byte[] buffer = pkt.toByte_();
 

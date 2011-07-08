@@ -1,5 +1,5 @@
 
-import ftsl.MessageProperties;
+import ftsl.MessageHandler;
 import ftsl.Session;
 import util.Logger;
 
@@ -39,13 +39,14 @@ public class httpClient {
 //			}
 //		}
 			
-			
 			int read = 0;
 			byte[] buffer = new byte[1024];
 			int pos = 0;
 			int len = 1024;
-			MessageProperties msgProperties= session.read(buffer, pos, len - pos);
+			MessageHandler msgProperties= session.read(buffer, pos, len - pos);
 			read = msgProperties.getSize();
+			if (msgProperties.isEom())
+				session.confirm();
 			
 			while (read != -1) {
 //				boolean newRequest = processInputbuffer(buffer, pos, read);
@@ -70,6 +71,8 @@ public class httpClient {
 				
 				msgProperties= session.read(buffer, pos, len - pos);
 				read = msgProperties.getSize();
+				if (msgProperties.isEom())
+					session.confirm();
 
 			}
 			Logger.log("client doesn't read anything now ...");
@@ -78,13 +81,11 @@ public class httpClient {
 	
 	public boolean processInputbuffer(byte[] buffer, int pos, int read) {
 
-		
 		//Logger.log("pos: "+pos+" read: "+read+" buffer size: "+buffer.length);
 		byte[] packet = new byte[read];
 		for (int i = 0; i < read; i++) {
 			packet[i] = buffer[pos + i];
 		}
-
 		//Logger.log("Server read: \n"+new String (packet));
 
 		String str = new String(packet);
