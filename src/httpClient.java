@@ -46,7 +46,7 @@ public class httpClient {
 			MessageHandler msgHandler= session.read(buffer, pos, len - pos);
 			read = msgHandler.getSize();
 			if (msgHandler.isEom())
-				msgHandler.confirm();
+				msgHandler.acknowledge();
 			
 			while (read != -1) {
 //				boolean newRequest = processInputbuffer(buffer, pos, read);
@@ -72,7 +72,7 @@ public class httpClient {
 				msgHandler= session.read(buffer, pos, len - pos);
 				read = msgHandler.getSize();
 				if (msgHandler.isEom())
-					msgHandler.confirm();
+					msgHandler.acknowledge();
 
 			}
 			Logger.log("client doesn't read anything now ...");

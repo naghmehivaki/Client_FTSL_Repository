@@ -1,4 +1,5 @@
 
+import ftsl.MessageHandler;
 import ftsl.Session;
 import util.Logger;
 
@@ -32,7 +33,10 @@ public class httpClient_test2 {
 			int pos = 0;
 			int len = 1024; 
 			
-			read = session.read(buffer, pos, len - pos);
+			MessageHandler msgHandler= session.read(buffer, pos, len - pos);
+			read = msgHandler.getSize();
+			if (msgHandler.isEom())
+				msgHandler.acknowledge();
 			
 			Logger.log("***** \n"+ new String (buffer));
 
@@ -45,7 +49,10 @@ public class httpClient_test2 {
 					pos = 0;
 				}
 
-				read = session.read(buffer, pos, len - pos);
+				msgHandler= session.read(buffer, pos, len - pos);
+				read = msgHandler.getSize();
+				if (msgHandler.isEom())
+					msgHandler.acknowledge(); 
 
 			}
 		}

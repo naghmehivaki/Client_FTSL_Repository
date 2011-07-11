@@ -181,7 +181,7 @@ public class FTSL_Logger extends Thread {
 			System.out.println("loge is false now 4");
 
 			log = "receivedBuffer\n";
-			HashMap<Integer, String> receivedBuffer = session
+			HashMap<Integer, FTSLMessage> receivedBuffer = session
 					.getReceivedBuffer();
 			Set<Integer> ids = receivedBuffer.keySet();
 			Iterator<Integer> it = ids.iterator();
@@ -617,7 +617,7 @@ public class FTSL_Logger extends Thread {
 						str = str + log + "\n";
 					} else {
 
-						session.addreceivedMessage(id, str);
+						session.addReceivedMessage(id, FTSLMessage.valueOf_(str));
 						str="";
 					}
 					log = reader.readLine();
