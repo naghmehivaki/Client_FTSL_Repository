@@ -1,5 +1,6 @@
 package ftsl;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -181,10 +182,34 @@ public class Session {
 				LOGGING_PERIOD * 1000, LOGGING_PERIOD * 1000);
 	}
 
-	/* ****************************** setters and getters */
+	/* ****************************** setters and getters */	
 	public void setTimeut(int time){
 		MAX_WAIT_TIME=time;
 	}
+	public boolean isTransactional() {
+		return isTransactional;
+	}
+
+	public void setTransactional(boolean isTransactional) {
+		this.isTransactional = isTransactional;
+	}
+
+	public int getEoTheLastSentMessage() {
+		return eoTheLastSentMessage;
+	}
+
+	public void setEoTheLastSentMessage(int e) {
+		this.eoTheLastSentMessage = e;
+	}
+
+	public int getEoTheLastRecievedMessage() {
+		return eoTheLastRecievedMessage;
+	}
+
+	public void setEoTheLastRecievedMessage(int e) {
+		this.eoTheLastRecievedMessage = e;
+	}
+
 	public Socket getSocket() {
 		return socket;
 	}
@@ -856,6 +881,7 @@ public class Session {
 
 	public void HandleFailure() {
 
+		System.out.println("failure handling");
 		boolean done = false;
 
 		try {
